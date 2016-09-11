@@ -2,7 +2,7 @@ FROM janeczku/rancher-gen:latest
 
 VOLUME /opt/rancher/bin
 
-RUN apk add --no-cache curl bash xfsprogs groff less python py-pip && \
+RUN apk add --no-cache curl bash xfsprogs groff less python py2-pip && \
     curl -L -o /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
     chmod +x /usr/bin/jq && \
     pip install awscli && \

@@ -1,0 +1,48 @@
+#! /bin/bash
+
+# Attaches an EBS volume (creating if necessary), attaches
+# formats and mounts it to $VOLUME_DIR
+
+mount --rbind /host/dev /dev
+
+VOLUME_NAME=${EBS_VOLUME_NAME}
+
+VOLUME_SUFFIX=$(echo "$EBS_VOLUME_SIZE" | tail -c 2)
+
+if [[ "$VOLUME_SUFFIX" != "G" ]]; then
+  echo "Volume sizes must be specified in gigabytes (e.g. 100G)"
+  exit 1
+fi
+
+VOLUME_SIZE=${EBS_VOLUME_SIZE%?}
+VOLUME_TYPE=${EBS_VOLUME_TYPE:-gp2}
+VOLUME_IOPS=${EBS_VOLUME_IOPS}
+VOLUME_DIR=${EBS_VOLUME_DIR:-/ebs/$VOLUME_NAME}
+
+# TODO: support volume resizing,
+#       migrating between AZ,
+#       duplicate vs detach, etc
+
+if [[ "$VOLUME_NAME" != "" ]]; then
+  devices=$(ebs-free-devices)
+  VOLUME_DEVICE=$(echo "$devices" | head -n 1)
+
+  if [[ "$VOLUME_DEVICE" == "" ]]; then
+    echo "Not enough available devices!"
+    exit 1
+  fi
+
+  VOLUME_OPTS="--volume-type $VOLUME_TYPE"
+  if [[ "$VOLUME_IOPS" != "" ]]; then
+    VOLUME_OPTS="$VOLUME_OPTS --iops $VOLUME_IOPS"
+  fi
+
+  ebs-add-volume $VOLUME_NAME $VOLUME_SIZE $VOLUME_DEVICE $VOLUME_OPTS
+
+  DEVICE=$(ebs-volume-device $VOLUME_NAME)
+
+  mkfs.xfs $DEVICE 2>/dev/null
+  mkdir -p $VOLUME_DIR 2>/dev/null
+  umount $VOLUME_DIR 2>/dev/null
+  mount -t xfs -o noatime,nodiratime,noexec $DEVICE $VOLUME_DIR 2>/dev/null
+fi

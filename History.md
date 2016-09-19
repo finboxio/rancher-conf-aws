@@ -1,4 +1,9 @@
 
+0.0.4 / 2016-09-19
+==================
+
+  * update rancher-gen with support for service parents
+
 0.0.3 / 2016-09-14
 ==================
 

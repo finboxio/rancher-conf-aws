@@ -1,6 +1,6 @@
 # rancher-conf-aws
 
-Simple base container for rancher sidekicks whose responsibility is to write configuration files for other services. Includes [janeczku/go-rancher-gen](https://github.com/janeczku/go-rancher-gen) for templated configuration based on rancher metadata and awscli + scripts for mounting ebs volumes.
+Simple base container for rancher sidekicks whose responsibility is to write configuration files for other services. Includes [janeczku/go-rancher-gen](https://github.com/janeczku/go-rancher-gen) for templated configuration based on rancher metadata and awscli + scripts for mounting EBS volumes and pulling files from S3.
 
 ## Getting Started
 
@@ -17,10 +17,20 @@ Run this container with the following environment variables set, and on startup 
 Environment Variable | Default | Role
 --- | :---: | ---
 `EBS_VOLUME_NAME` | `-` | Look for an EBS volume with this name in the current AZ. If it doesn't exist, create it. Then attaches this volume to an available device if not already attached. If not set, no volume will be mounted.
-`EBS_VOLUME_DIR` | `/ebs/${EBS_VOLUME_NAME}` | Where to mount the volume
+`EBS_VOLUME_DIR` | `/ebs/${EBS_VOLUME_NAME}` | Where to mount the volume.
 `EBS_VOLUME_SIZE` | `-` | If the named volume doesn't exist, it will be created with this size, otherwise this is ignored. Must be in `<size>G` format (e.g. 50G).
 `EBS_VOLUME_TYPE` | `gp2` | If the named volume doesn't exist, it will be created with this type, otherwise ignored.
 `EBS_VOLUME_IOPS` | `-` | If specified and the named volume doesn't exist, it will be provisioned with the specified IOPS. Otherwise ignored.
+
+#### pull an s3 bucket
+
+Run this container with the following environment variables set, and on startup it will download the contents of the specified s3 folder to the local drive.
+
+Environment Variable | Default | Role
+--- | :---: | ---
+`S3_BUCKET` | `-` | Specifies the S3 bucket to download. If not set, no S3 bucket will be downloaded.
+`S3_PREFIX` | `-` | Specifies a subfolder within the S3 bucket to download. If specified, nothing in `$S3_BUCKET` outside of this prefix will be downloaded. This will be ignored unless `$S3_BUCKET` is specified.
+`S3_MOUNT_DIR` | `/s3/${S3_BUCKET}/${S3_PREFIX}` | Where to locally store the S3 files.
 
 #### setup an entrypoint
 

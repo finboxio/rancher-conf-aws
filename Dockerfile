@@ -1,6 +1,8 @@
-FROM alpine:3.4
+FROM alpine:latest
 
 VOLUME /opt/rancher/bin
+VOLUME /ebs
+VOLUME /s3
 
 RUN apk add --no-cache curl bash xfsprogs groff less python py-pip && \
     curl -L -o /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
@@ -13,6 +15,9 @@ RUN chmod +x /usr/local/bin/rancher-gen
 
 COPY ebs-scripts/* /usr/sbin/
 RUN chmod +x /usr/sbin/ebs-*
+
+COPY s3-scripts/* /usr/sbin/
+RUN chmod +x /usr/sbin/s3-*
 
 COPY entrypoint.sh /entrypoint.sh
 

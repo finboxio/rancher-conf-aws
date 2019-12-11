@@ -18,6 +18,7 @@ VOLUME_SIZE=${EBS_VOLUME_SIZE%?}
 VOLUME_TYPE=${EBS_VOLUME_TYPE:-gp2}
 VOLUME_IOPS=${EBS_VOLUME_IOPS}
 VOLUME_DIR=${EBS_VOLUME_DIR:-/ebs/$VOLUME_NAME}
+VOLUME_FS=${EBS_VOLUME_FS:-xfs}
 
 # TODO: support volume resizing,
 #       migrating between AZ,
@@ -41,8 +42,8 @@ if [[ "$VOLUME_NAME" != "" ]]; then
 
   DEVICE=$(ebs-volume-device $VOLUME_NAME)
 
-  mkfs.xfs $DEVICE 2>/dev/null
+  mkfs -t $VOLUME_FS $DEVICE 2>/dev/null
   mkdir -p $VOLUME_DIR 2>/dev/null
   umount $VOLUME_DIR 2>/dev/null
-  mount -t xfs -o noatime,nodiratime,noexec $DEVICE $VOLUME_DIR 2>/dev/null
+  mount -t $VOLUME_FS -o noatime,nodiratime,noexec $DEVICE $VOLUME_DIR 2>/dev/null
 fi

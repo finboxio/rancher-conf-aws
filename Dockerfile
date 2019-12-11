@@ -4,7 +4,7 @@ VOLUME /opt/rancher/bin
 VOLUME /ebs
 VOLUME /s3
 
-RUN apk add --no-cache curl bash xfsprogs groff less python py-pip && \
+RUN apk add --no-cache curl bash xfsprogs e2fsprogs groff less python py-pip && \
     curl -L -o /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
     chmod +x /usr/bin/jq && \
     pip install awscli && \

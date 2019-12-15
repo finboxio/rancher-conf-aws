@@ -2,16 +2,29 @@
 
 # Return a list of available devices for mounting EBS volumes
 
-if [[ -e "/dev/xvda1" ]]; then
+REGION=$(wget -qO- http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+AZ=$(wget -qO- http://169.254.169.254/latest/meta-data/placement/availability-zone)
+ID=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-id)
+
+VOLUMES=$(aws ec2 --region $REGION describe-volumes \
+  --filter Name=attachment.instance-id,Values=${ID} \
+  | jq -r '.Volumes[] | (.Attachments[]? | .Device + " " + .InstanceId)' \
+  | grep $ID \
+  | awk '{ print $1 }' \
+  | sort)
+
+if echo "$VOLUMES" | grep -q "/dev/xvd"; then
   base="/dev/xvd"
-else
+elif echo "$VOLUMES" | grep -q "/dev/sd"; then
   base="/dev/sd"
+else
+  base="/dev/ebs"
 fi
 
 all="fghijklmnop"
 for num in $(seq 1 ${#all}); do
   device=${all:$((num-1)):1}
-  if [[ ! -e "${base}${device}" ]]; then
+  if ! echo "$VOLUMES" | grep -q "${base}${device}"; then
     echo "${base}${device}"
   fi
 done

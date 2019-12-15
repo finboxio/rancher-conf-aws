@@ -31,7 +31,7 @@ if [[ "$VOLUME_ID" == "" ]]; then
   aws ec2 create-tags --region $REGION --resources $VOLUME_ID --tags Key=Name,Value=$VOLUME_NAME
 fi
 
-volume=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID)
+volume=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID --filter Name=attachment.instance-id,Values=${ID})
 
 ATTACHED_TO_ME=$(echo "$volume" | jq -r '.Volumes[0].Attachments[] | select(.InstanceId == "'$ID'" and .State == "attached")' | jq -rs 'length > 0' 2>/dev/null)
 ATTACHED_AT_ALL=$(echo "$volume" | jq -r '.Volumes[0].State != "available"' 2>/dev/null)
@@ -53,12 +53,12 @@ if [[ "$ATTACHED_AT_ALL" != "true" || "$ATTACHED_TO_ME" != "true" ]]; then
   while [[ "$ATTACHMENT_STATE" != "attached" ]]; do
     sleep 10
     printf "."
-    ATTACHMENT_STATE=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID | jq -r '.Volumes[0] | .Attachments[] | select(.InstanceId == "'$ID'" and .Device == "'$VOLUME_DEVICE'") | .State' 2>/dev/null)
+    ATTACHMENT_STATE=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID --filter Name=attachment.instance-id,Values=${ID} | jq -r '.Volumes[0] | .Attachments[] | select(.InstanceId == "'$ID'" and .Device == "'$VOLUME_DEVICE'") | .State' 2>/dev/null)
   done
   printf "\n"
 fi
 
-volume=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID)
+volume=$(aws ec2 describe-volumes --region $REGION --volume-ids $VOLUME_ID --filter Name=attachment.instance-id,Values=${ID})
 device=$(echo "$volume" | jq -r '.Volumes[0].Attachments[] | select(.InstanceId == "'$ID'" and .State == "attached") | .Device' 2>/dev/null)
 
 echo "Attached volume $VOLUME_ID at $device"

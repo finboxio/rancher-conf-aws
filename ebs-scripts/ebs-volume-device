@@ -9,10 +9,20 @@ REGION=$(wget -qO- http://169.254.169.254/latest/dynamic/instance-identity/docum
 AZ=$(wget -qO- http://169.254.169.254/latest/meta-data/placement/availability-zone)
 ID=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-id)
 
-aws ec2 --region $REGION describe-volumes \
+VOLUME=$(aws ec2 --region $REGION describe-volumes \
   --filter Name=AvailabilityZone,Values=${AZ} \
   --filter Name=tag:Name,Values=${VOLUME_NAME} \
-  | jq -r '.Volumes[] | (.Tags[]? | select(.Key == "Name") | .Value) + " " + (.Attachments[]? | .InstanceId + " " + .Device)' \
+  | jq -r '.Volumes[] | (.Tags[]? | select(.Key == "Name") | .Value) + " " + (.Attachments[]? | .InstanceId + " " + .Device + " " + .VolumeId)' \
   | grep $ID \
   | sort \
-  | awk '{ print $3 }'
+  | head -n 1)
+
+DEVICE=$(echo $VOLUME | awk '{ print $3 }')
+
+if [ -f $DEVICE ]; then
+  echo $DEVICE
+else
+  VID=$(echo $VOLUME | awk '{ print $4 }' | tr -d '-')
+  NVME=$(nvme list | grep $VID | awk '{ print $1 }' | head -n 1)
+  echo $NVME
+fi

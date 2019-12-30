@@ -19,7 +19,7 @@ VOLUME=$(aws ec2 --region $REGION describe-volumes \
 
 DEVICE=$(echo $VOLUME | awk '{ print $3 }')
 
-if [ -f $DEVICE ]; then
+if [ -e $DEVICE ]; then
   echo $DEVICE
 else
   VID=$(echo $VOLUME | awk '{ print $4 }' | tr -d '-')

@@ -19,6 +19,7 @@ VOLUME_TYPE=${EBS_VOLUME_TYPE:-gp2}
 VOLUME_IOPS=${EBS_VOLUME_IOPS}
 VOLUME_DIR=${EBS_VOLUME_DIR:-/ebs/$VOLUME_NAME}
 VOLUME_FS=${EBS_VOLUME_FS:-xfs}
+VOLUME_USER_ID=${EBS_VOLUME_USER_ID}
 
 # TODO: support volume resizing,
 #       migrating between AZ,
@@ -46,4 +47,7 @@ if [[ "$VOLUME_NAME" != "" ]]; then
   mkdir -p $VOLUME_DIR 2>/dev/null
   umount $VOLUME_DIR 2>/dev/null
   mount -t $VOLUME_FS -o noatime,nodiratime,noexec $DEVICE $VOLUME_DIR 2>/dev/null
+  if [[ "$VOLUME_USER_ID" != "" ]]; then
+    chown -R ${VOLUME_USER_ID}:${VOLUME_USER_ID} ${VOLUME_DIR}
+  fi
 fi

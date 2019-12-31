@@ -13,9 +13,9 @@ VOLUMES=$(aws ec2 --region $REGION describe-volumes \
   | awk '{ print $1 }' \
   | sort)
 
-if echo "$VOLUMES" | grep -q "/dev/xvd"; then
+if [ -e "/dev/xvda" ]; then
   base="/dev/xvd"
-elif echo "$VOLUMES" | grep -q "/dev/sd"; then
+elif [ -e "/dev/sda" ]; then
   base="/dev/sd"
 else
   base="/dev/ebs"

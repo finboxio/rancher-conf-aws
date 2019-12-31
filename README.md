@@ -19,6 +19,7 @@ Environment Variable | Default | Role
 `EBS_VOLUME_NAME` | `-` | Look for an EBS volume with this name in the current AZ. If it doesn't exist, create it. Then attaches this volume to an available device if not already attached. If not set, no volume will be mounted.
 `EBS_VOLUME_DIR` | `/ebs/${EBS_VOLUME_NAME}` | Where to mount the volume.
 `EBS_VOLUME_SIZE` | `-` | If the named volume doesn't exist, it will be created with this size, otherwise this is ignored. Must be in `<size>G` format (e.g. 50G).
+`EBS_VOLUME_USER_ID` | `-` | The user id to permission the ebs volume for.
 `EBS_VOLUME_FS` | `xfs` | Formats the volume with the given filesystem.
 `EBS_VOLUME_TYPE` | `gp2` | If the named volume doesn't exist, it will be created with this type, otherwise ignored.
 `EBS_VOLUME_IOPS` | `-` | If specified and the named volume doesn't exist, it will be provisioned with the specified IOPS. Otherwise ignored.

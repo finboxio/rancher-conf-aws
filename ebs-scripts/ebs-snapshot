@@ -1,0 +1,36 @@
+#! /bin/bash
+
+# Creates a snapshot of the attached EBS volume
+
+VOLUME_NAME=${EBS_VOLUME_NAME}
+SNAPSHOT_NAME=${EBS_SNAPSHOT_NAME}
+PRE_SNAPSHOT_SCRIPT=${PRE_SNAPSHOT_SCRIPT}
+POST_SNAPSHOT_SCRIPT=${POST_SNAPSHOT_SCRIPT}
+
+REGION=$(wget -qO- http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+AZ=$(wget -qO- http://169.254.169.254/latest/meta-data/placement/availability-zone)
+ID=$(wget -qO- http://169.254.169.254/latest/meta-data/instance-id)
+
+volume=$(aws ec2 --region $REGION describe-volumes \
+  --filter Name=attachment.instance-id,Values=${ID} \
+  --filter Name=AvailabilityZone,Values=${AZ} \
+  --filter Name=tag:Name,Values=${VOLUME_NAME})
+
+VOLUME_ID=$(echo "$volume" | jq -r '.Volumes[0].VolumeId | select(. != null)' 2>/dev/null)
+
+$PRE_SNAPSHOT_SCRIPT
+
+SNAPSHOT_ID=$(aws ec2 create-snapshot --region $REGION --description "${SNAPSHOT_NAME}" --tag-specifications "ResourceType=snapshot,Tags=[{Key=Name,Value=${SNAPSHOT_NAME}}]" --volume-id ${VOLUME_ID} | jq -r .SnapshotId)
+
+$POST_SNAPSHOT_SCRIPT
+
+## Wait for snapshot to complete
+SNAPSHOT_STATE=$(aws ec2 describe-snapshots --region $REGION --snapshot-id $SNAPSHOT_ID | jq -r '.Snapshots[] | .State')
+
+while [[ "$SNAPSHOT_STATE" != "completed" ]]; do
+  sleep 10
+  echo "waiting for snapshot $SNAPSHOT_ID to complete..."
+  SNAPSHOT_STATE=$(aws ec2 describe-snapshots --region $REGION --snapshot-id $SNAPSHOT_ID | jq -r '.Snapshots[] | .State')
+done
+
+echo "completed snapshot - ${SNAPSHOT_ID}"

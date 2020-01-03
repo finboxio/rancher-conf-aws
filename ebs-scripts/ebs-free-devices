@@ -17,6 +17,8 @@ if [ -e "/dev/xvda" ]; then
   base="/dev/xvd"
 elif [ -e "/dev/sda" ]; then
   base="/dev/sd"
+elif [ -e "/dev/nvme0" ]; then
+  base="/dev/sd"
 else
   base="/dev/ebs"
 fi

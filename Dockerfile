@@ -4,14 +4,14 @@ VOLUME /opt/rancher/bin
 VOLUME /ebs
 VOLUME /s3
 
-RUN apk add --no-cache curl bash xfsprogs e2fsprogs groff less python py-pip nvme-cli util-linux && \
+RUN apk add --no-cache go git curl bash xfsprogs e2fsprogs groff less python py-pip nvme-cli util-linux && \
     curl -L -o /usr/bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
     chmod +x /usr/bin/jq && \
     pip install awscli && \
-    apk del --no-cache py-pip
+    go get github.com/finboxio/rancher-conf/cmd/rancher-conf && \
+    apk del --no-cache go git py-pip
 
-ADD rancher-gen/rancher-gen /usr/local/bin/rancher-gen
-RUN chmod +x /usr/local/bin/rancher-gen
+ENV PATH=$PATH:/root/go/bin
 
 COPY ebs-scripts/* /usr/sbin/
 RUN chmod +x /usr/sbin/ebs-*

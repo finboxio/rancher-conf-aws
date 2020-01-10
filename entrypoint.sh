@@ -9,5 +9,5 @@ if [[ "$S3_BUCKET" != "" ]]; then
 fi
 
 if [[ -e /etc/rancher-conf/config.toml ]]; then
-  exec /usr/local/bin/rancher-gen --config /etc/rancher-conf/config.toml
+  exec rancher-conf --config /etc/rancher-conf/config.toml
 fi

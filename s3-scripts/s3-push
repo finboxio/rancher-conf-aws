@@ -6,4 +6,4 @@ SOURCE_PATH="${S3_BUCKET}/${S3_PREFIX}"
 
 DEST_PATH=${S3_MOUNT_DIR:-/s3/$SOURCE_PATH}
 
-aws s3 sync ${DEST_PATH} s3://${SOURCE_PATH}
+aws s3 sync $@ ${DEST_PATH} s3://${SOURCE_PATH}

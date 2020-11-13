@@ -1,4 +1,9 @@
 
+1.1.0 / 2020-11-12
+==================
+
+  * Support for S3 mounting and cpu count in templates
+
 1.0.0 / 2020-01-31
 ==================
 

@@ -1,0 +1,32 @@
+#! /bin/sh
+
+REGION=$(wget -qO- http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+
+LOG_LEVEL=${LOG_LEVEL:-crit}
+S3_REGION=${S3_REGION:-$REGION}
+SOURCE_PATH="${S3_BUCKET}/${S3_PREFIX}"
+DEST_PATH=${S3_MOUNT_DIR:-/s3/$SOURCE_PATH}
+mkdir -p $DEST_PATH
+
+CREDENTIALS=""
+if [[ "$AWS_ACCESS_KEY_ID" != "" ]]; then
+  echo $AWS_ACCESS_KEY_ID:$AWS_SECRET_ACCESS_KEY > /etc/passwd-s3fs
+  chmod 640 /etc/passwd-s3fs
+  CREDENTIALS="-o passwd_file=/etc/.passwd-s3fs"
+elif [[ "$AWS_IAM_ROLE" != "" ]]; then
+  CREDENTIALS="-o iam_role=${AWS_IAM_ROLE}"
+else
+  role_name=$(curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ | head -n 1)
+  CREDENTIALS="-o iam_role=${role_name}"
+fi
+
+if [[ "$S3_STAT_TTL" ]]; then
+  STAT_TTL="-o stat_cache_expire=${S3_STAT_TTL}"
+fi
+
+s3fs -f \
+  -o use_cache=/tmp/s3fs \
+  -o use_path_request_style \
+  -o endpoint=${S3_REGION} \
+  -o dbglevel=${LOG_LEVEL} \
+  ${CREDENTIALS} ${STAT_TTL} ${S3_BUCKET}:/${S3_PREFIX} ${DEST_PATH}

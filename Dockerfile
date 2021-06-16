@@ -29,7 +29,7 @@ RUN apk add --no-cache go git \
     chmod +x /usr/local/bin/jq && \
     pip3 install awscli && \
     go get github.com/tsg/gotpl && \
-    go get github.com/finboxio/rancher-conf/cmd/rancher-conf@v0.7.0 && \
+    go get github.com/finboxio/rancher-conf/cmd/rancher-conf@v0.7.1 && \
     rm -rf /root/go/src && \
     apk del go git
 

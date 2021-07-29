@@ -5,7 +5,11 @@ if [[ "$EBS_VOLUME_NAME" != "" ]]; then
 fi
 
 if [[ "$S3_BUCKET" != "" ]]; then
-  s3-pull
+  until s3-pull
+  do
+    echo "S3 pull failed. Retrying..."
+    sleep 1
+  done
 fi
 
 if [[ -e /etc/rancher-conf/config.toml ]]; then

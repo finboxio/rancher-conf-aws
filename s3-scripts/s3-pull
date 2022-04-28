@@ -6,4 +6,7 @@ SOURCE_PATH="${S3_BUCKET}/${S3_PREFIX}"
 
 DEST_PATH=${S3_MOUNT_DIR:-/s3/$SOURCE_PATH}
 
-aws s3 sync $@ s3://${SOURCE_PATH} ${DEST_PATH}
+until aws s3 sync $@ s3://${SOURCE_PATH} ${DEST_PATH}
+do
+  sleep 5
+done
